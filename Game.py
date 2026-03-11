@@ -19,7 +19,7 @@ def make_spacer_lines():
 '''WIP'''
 def make_player_sprite():
     h = 150
-    w = 50
+    w = 10
     img = tk.PhotoImage(width=w, height=h)
     color1 = "gray"
     for y in range(h):
@@ -29,17 +29,18 @@ def make_player_sprite():
 # - top spike
 def make_top_spike_sprite():
     pattern = [
-        "1111111",
-        "1111111",
-        "0111110",
-        "0111110",
-        "0111110",
-        "0111110",
-        "0011100",
-        "0011100",
-        "0011100",
-        "0001000",
-        "0001000"]
+        "11111",
+        "11111",
+        "11111",
+        "11111",
+        "01110",
+        "01110",
+        "01110",
+        "01110",
+        "00100",
+        "00100",
+        "00100",
+        "00100"]
     scale = 5
     h = len(pattern)*scale
     w = len(pattern[0])*scale
@@ -53,41 +54,43 @@ def make_top_spike_sprite():
 # - top long spike
 def make_top_long_spike_sprite():
     pattern = [
-        "111111",
-        "111111",
-        "011111",
-        "011111",
-        "011111",
-        "011111",
-        "001110",
-        "001110",
-        "001110",
-        "000100",
-        "000100"]
+        "11111",
+        "11111",
+        "11111",
+        "11111",
+        "01110",
+        "01110",
+        "01110",
+        "01110",
+        "00100",
+        "00100",
+        "00100",
+        "00100"]
     scale = 5
     h = len(pattern)*scale
-    w = (len(pattern[0])*3+1)*scale
+    w = (len(pattern[0])*3-2)*scale
     img = tk.PhotoImage(width=w, height=h)
     color1 = "red"
     for y in range(h):
         for x in range(w):
-            if pattern[y//scale][(x//scale)%6] == "1":
+            if pattern[y//scale][(x//scale)%(len(pattern[0])-1)] == "1":
                 img.put(color1, (x,y))
     return img
 # - bottom spike
 def make_bottom_spike_sprite():
     pattern = [
-        "0001000",
-        "0001000",
-        "0011100",
-        "0011100",
-        "0011100",
-        "0111110",
-        "0111110",
-        "0111110",
-        "0111110",
-        "1111111",
-        "1111111"]
+        "00100",
+        "00100",
+        "00100",
+        "00100",
+        "01110",
+        "01110",
+        "01110",
+        "01110",
+        "11111",
+        "11111",
+        "11111",
+        "11111"]
     scale = 5
     h = len(pattern)*scale
     w = len(pattern[0])*scale
@@ -101,25 +104,26 @@ def make_bottom_spike_sprite():
 # - bottom long spike
 def make_bottom_long_spike_sprite():
     pattern = [
-        "0001000",
-        "0001000",
-        "0011100",
-        "0011100",
-        "0011100",
-        "0111110",
-        "0111110",
-        "0111110",
-        "0111110",
-        "1111111",
-        "1111111"]
+        "00100",
+        "00100",
+        "00100",
+        "00100",
+        "01110",
+        "01110",
+        "01110",
+        "01110",
+        "11111",
+        "11111",
+        "11111",
+        "11111"]
     scale = 5
     h = len(pattern)*scale
-    w = 19*scale
+    w = (len(pattern[0])*3-2)*scale
     img = tk.PhotoImage(width=w, height=h)
     color1 = "red"
     for y in range(h):
         for x in range(w):
-            if pattern[y//scale][(x//scale)%6] == "1":
+            if pattern[y//scale][(x//scale)%(len(pattern[0])-1)] == "1":
                 img.put(color1, (x,y))
     return img
 # - short projectile
@@ -222,36 +226,33 @@ root.title("COSMOS INFILTRATORS")
 canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT, bg="white")
 canvas.pack()
 
+#Initializing Sprites - Player
 player_img=make_player_sprite()
 
-
+#Initializing Sprites - Spikes
 spikes = []
 
 small_top_spike_img = make_top_spike_sprite()
 def make_small_top_spike():
-    small_top_spike = canvas.create_image(670-225, 0, image=small_top_spike_img, anchor = 'nw')
+    small_top_spike = canvas.create_image(670, 0, image=small_top_spike_img, anchor = 'nw')
     spikes.append(small_top_spike)
-make_small_top_spike()
 
 large_top_spike_img = make_top_long_spike_sprite()
 def make_large_top_spike():
-    large_top_spike = canvas.create_image(670-225, 0, image=large_top_spike_img, anchor = 'nw')
+    large_top_spike = canvas.create_image(670, 0, image=large_top_spike_img, anchor = 'nw')
     spikes.append(large_top_spike)
-make_large_top_spike()
 
 small_bottom_spike_img = make_bottom_spike_sprite()
 def make_small_bottom_spike():
-    small_bottom_spike = canvas.create_image(670-225, HEIGHT, image=small_bottom_spike_img, anchor = 'sw')
+    small_bottom_spike = canvas.create_image(670, HEIGHT, image=small_bottom_spike_img, anchor = 'sw')
     spikes.append(small_bottom_spike)
-make_small_bottom_spike()
 
 large_bottom_spike_img = make_bottom_long_spike_sprite()
 def make_large_bottom_spike():
-    large_bottom_spike = canvas.create_image(670-225, HEIGHT, image=large_bottom_spike_img, anchor = 'sw')
+    large_bottom_spike = canvas.create_image(670, HEIGHT, image=large_bottom_spike_img, anchor = 'sw')
     spikes.append(large_bottom_spike)
-make_large_bottom_spike()
 
-
+#Initializing Sprites - Projectiles
 projectiles = []
 
 projectile_img = make_projectile_sprite()
@@ -259,10 +260,8 @@ def make_projectile(side):
     y_position = 73
     if side == "bottom":
         y_position+= 200
-    projectile = canvas.create_image(648-225, y_position, image=projectile_img, anchor = 'nw')
+    projectile = canvas.create_image(648, y_position, image=projectile_img, anchor = 'nw')
     projectiles.append(projectile)
-make_projectile("top")
-make_projectile("bottom")
 
 long_head_img=make_long_projectile_head_sprite()
 long_body_img=make_long_projectile_body_sprite()
@@ -271,17 +270,14 @@ def make_large_projectile(side):
     y_position = 73
     if side == "bottom":
         y_position+= 200
-    long_projectile_head = canvas.create_image(648-225,y_position, image=long_head_img, anchor = 'nw')
-    long_projectile_body = canvas.create_image(648-225+40,y_position, image=long_body_img, anchor = 'nw')
-    long_projectile_tail = canvas.create_image(648-225+90,y_position, image=long_tail_img, anchor = 'nw')
+    long_projectile_head = canvas.create_image(648,y_position, image=long_head_img, anchor = 'nw')
+    long_projectile_body = canvas.create_image(648+40,y_position, image=long_body_img, anchor = 'nw')
+    long_projectile_tail = canvas.create_image(648+90,y_position, image=long_tail_img, anchor = 'nw')
     projectiles.append(long_projectile_head)
     projectiles.append(long_projectile_body)
     projectiles.append(long_projectile_tail)
-make_large_projectile("top")
-make_large_projectile("bottom")
 
-print(projectiles)
-
+#Initializing Sprites - Spacer/Beat Lines
 spacer_line_img = make_spacer_lines()
 def draw_spacers():
     for x in range(1,8):
@@ -290,11 +286,11 @@ def draw_spacers():
 
 
 
-#jump function
+#Movement Binding
 def move_up(event):
-    canvas.moveto(player, 0, 25)
+    canvas.moveto(player, 40, 25)
 def move_down(event):
-    canvas.moveto(player, 0,225)
+    canvas.moveto(player, 40,225)
 root.bind("<space>", move_up)
 root.bind("<KeyRelease-space>", move_down)
 
@@ -309,23 +305,23 @@ def collision(a, b):
 #projectile movement
 def move_obstacles():
     for projectile in projectiles:
-        canvas.move(projectile, -6, 0)
+        canvas.move(projectile, -displacement, 0)
     for spike in spikes:
-        canvas.move(spike, -6, 0)
+        canvas.move(spike, -displacement, 0)
 
 
 
 previous_obstacle_num = -1
 def make_obstacle():
-    global previous_obstacle_num
-    obstacle_list = [lambda:make_projectile("top"),
+    '''global previous_obstacle_num #This is NOT chatgpt, I was trying to figure out a way to do this 
+    obstacle_list = [lambda:make_projectile("top"), #efficiently and found this out through google.
                      lambda:make_projectile("bottom"),
                      lambda:[make_projectile("top"), make_small_bottom_spike()],
                      lambda:[make_projectile("bottom"), make_small_top_spike()],
                      lambda:make_small_bottom_spike(),
                      lambda:make_small_top_spike(),
                      lambda:[make_projectile("top"), make_projectile("bottom")],
-                     lambda:make_large_projectile("top"), #this and below are extruded
+                     lambda:make_large_projectile("top"), #this and below are extruded (2 long)
                      lambda:make_large_projectile("bottom"),
                      lambda:make_large_bottom_spike(),
                      lambda:make_large_top_spike(),
@@ -334,7 +330,6 @@ def make_obstacle():
                      lambda:[make_projectile("bottom"), make_large_projectile("top")],
                      lambda:[make_projectile("top"), make_large_projectile("bottom")]
                      ]
-    print(previous_obstacle_num)
     if previous_obstacle_num >= 7:
         previous_obstacle_num = -1
         return
@@ -342,51 +337,60 @@ def make_obstacle():
     while previous_obstacle_num == obstacle_num:
         obstacle_num = random.randint(0, 14)
     obstacle = obstacle_list[obstacle_num]()
-    previous_obstacle_num = obstacle_num
+    previous_obstacle_num = obstacle_num'''
+    make_projectile("bottom")
 
     
 
 #game loop
 alive = True
 timer = 0
+bpm = 170
+spawn_delay = 60/bpm*1000
+delay = 24
+displacement = 5#int(75/(60/bpm/(delay/1000)))
+print(displacement)
+points = 0
 def game_loop():
-    global timer, alive
-    timer += 40
-    if timer > 500:
-        timer -= 500
+    global timer, alive, delay, points
+    timer += delay
+    if timer > spawn_delay:
+        timer -= spawn_delay
         make_obstacle()
     move_obstacles()
     if not alive:
-        canvas.delete(all)
         reset()
         return
     for projectile in projectiles[:]:
         if collision(projectile,player):
             canvas.delete(projectile)
+            points += 2
             if projectile in projectiles:
                 projectiles.remove(projectile)
             break
     for projectile in projectiles:
         ex1, ey1, ex2, ey2 = canvas.bbox(projectile)
-        px1, py1, px2, py2 = canvas.bbox(player)
-        if ex1 <= px1:
+        if ex1 <= 0:
             alive = False
-    root.after(40, game_loop) #move 6 (150 = 100y/x) (150 = 100y/4) (y=6)
+    root.after(delay, game_loop) #move 6 (150 = 100y/x) (150 = 100y/4) (y=6)
 
 #start & reset game
 def start():
     global player
-    player = canvas.create_image(0,225, image=player_img, anchor = 'nw')
+    player = canvas.create_image(40,225, image=player_img, anchor = 'nw')
     draw_spacers()
     game_loop()
 
-def reset(event=None):
+def reset():
     global alive
     canvas.delete("all")
     projectiles.clear()
     spikes.clear()
     alive = True
     start()
-root.bind("r", reset)
+def kill(event):
+    global alive
+    alive = False
+root.bind("r", kill)
 reset()
 root.mainloop()
