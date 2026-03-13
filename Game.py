@@ -15,13 +15,23 @@ def make_spacer_lines():
     for y in range(h):
         img.put('Black', (0,y))
     return img
+#Scoreboard
+def make_scoreboard():
+    h = 30
+    w = 150
+    img = tk.PhotoImage(width=w, height=h)
+    color1 = "gray"
+    for y in range(h):
+        for x in range(w):
+            img.put(color1, (x,y))
+    return img
 # - Player 
 '''WIP'''
 def make_player_sprite():
     h = 150
     w = 10
     img = tk.PhotoImage(width=w, height=h)
-    color1 = "gray"
+    color1 = "blue"
     for y in range(h):
         for x in range(w):
             img.put(color1, (x,y))
@@ -283,7 +293,10 @@ def draw_spacers():
     for x in range(1,8):
         canvas.create_image(x*WIDTH/8, 0, image=spacer_line_img, anchor = 'n')
 
-
+#Initializing Sprites - Scoreboard
+scoreboard_img = make_scoreboard()
+def draw_scoreboard():
+    canvas.create_image(WIDTH/2, HEIGHT/2, image=scoreboard_img, anchor = 'center')
 
 
 #Movement Binding
@@ -300,20 +313,50 @@ def collision(a, b):
     bx1, by1, bx2, by2 = canvas.bbox(b)
     return ax1<bx2 and ax2>bx1 and ay1<by2 and ay2>by1
 
-#score here??? could move
+def check_collisions():
+    global points, strikes, projectiles, spikes
+    for projectile in projectiles[:]:
+        if collision(projectile,player):
+            canvas.delete(projectile)
+            points += 1
+            if projectile in projectiles:
+                projectiles.remove(projectile)
+    for projectile in projectiles:
+        ex1, ey1, ex2, ey2 = canvas.bbox(projectile)
+        if ex2 <= 0:
+            canvas.delete(projectile)
+            points -= 4
+            if ex2-ex1 >= 50:
+                strikes += 1
+            if projectile in projectiles:
+                projectiles.remove(projectile)
+    for spike in spikes[:]:
+        if collision(spike,player):
+            points -= 4
+            strikes += 1
+            canvas.delete(spike)
+            if spike in spikes:
+                spikes.remove(spike)
+    for spike in spikes:
+        sx1, sy1, sx2, sy2 = canvas.bbox(spike)
+        if sx2 <= 0:
+            points += 1
+            canvas.delete(spike)
+            if spike in spikes:
+                spikes.remove(spike)
 
 #projectile movement
 def move_obstacles():
     for projectile in projectiles:
-        canvas.move(projectile, -displacement, 0)
+        canvas.move(projectile, displacement, 0)
     for spike in spikes:
-        canvas.move(spike, -displacement, 0)
+        canvas.move(spike, displacement, 0)
 
 
 
 previous_obstacle_num = -1
 def make_obstacle():
-    '''global previous_obstacle_num #This is NOT chatgpt, I was trying to figure out a way to do this 
+    global previous_obstacle_num #This is NOT chatgpt, I was trying to figure out a way to do this 
     obstacle_list = [lambda:make_projectile("top"), #efficiently and found this out through google.
                      lambda:make_projectile("bottom"),
                      lambda:[make_projectile("top"), make_small_bottom_spike()],
@@ -337,60 +380,68 @@ def make_obstacle():
     while previous_obstacle_num == obstacle_num:
         obstacle_num = random.randint(0, 14)
     obstacle = obstacle_list[obstacle_num]()
-    previous_obstacle_num = obstacle_num'''
-    make_projectile("bottom")
+    previous_obstacle_num = obstacle_num
 
     
 
-#game loop
-alive = True
-timer = 0
-bpm = 170
-spawn_delay = 60/bpm*1000
-delay = 24
-displacement = 5#int(75/(60/bpm/(delay/1000)))
-print(displacement)
+#Variables
+strikes = 0
 points = 0
+timer = 0
+heal_delay = 0
+
+#BPM - Only change BPM and adjust displacement using commented out print statement until delay is an integer
+#      If you can't find a displacement that yields an integer delay and displacement, try a different bpm
+bpm = 150
+displacement = -4.5
+
+units_per_second = bpm/60*75
+movements_per_second = units_per_second/abs(displacement)
+delay = int(1000/movements_per_second)
+spawn_delay = 60000/bpm
+#print(f"Delay: {1000/movements_per_second}\nDisplacement: {displacement}")
+
+
+#Game Loop
 def game_loop():
-    global timer, alive, delay, points
+    global timer, points, heal_delay, strikes, score_count
     timer += delay
     if timer > spawn_delay:
         timer -= spawn_delay
         make_obstacle()
+        if strikes > 0:
+            heal_delay += 1
+            if heal_delay >= 20:
+                heal_delay = 0 
+                strikes -= 1
     move_obstacles()
-    if not alive:
+    check_collisions()
+    canvas.itemconfigure(score_count, text=f"Score: {points}")
+    if strikes >= 3:
         reset()
         return
-    for projectile in projectiles[:]:
-        if collision(projectile,player):
-            canvas.delete(projectile)
-            points += 2
-            if projectile in projectiles:
-                projectiles.remove(projectile)
-            break
-    for projectile in projectiles:
-        ex1, ey1, ex2, ey2 = canvas.bbox(projectile)
-        if ex1 <= 0:
-            alive = False
     root.after(delay, game_loop) #move 6 (150 = 100y/x) (150 = 100y/4) (y=6)
 
 #start & reset game
 def start():
-    global player
+    global player, score_count
     player = canvas.create_image(40,225, image=player_img, anchor = 'nw')
     draw_spacers()
+    draw_scoreboard()
+    score_count = canvas.create_text(300,200,text=f"score: 0", font=('Arial', 20), anchor = "center")
     game_loop()
 
 def reset():
-    global alive
+    global strikes, score
     canvas.delete("all")
     projectiles.clear()
     spikes.clear()
-    alive = True
+    strikes = 0
+    score = 0
     start()
 def kill(event):
-    global alive
-    alive = False
+    global strikes
+    strikes = 4
 root.bind("r", kill)
 reset()
 root.mainloop()
