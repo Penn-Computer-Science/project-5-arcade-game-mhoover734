@@ -232,7 +232,7 @@ def make_long_projectile_tail_sprite():
 
 #initialize stuff
 root = tk.Tk()
-root.title("COSMOS INFILTRATORS")
+root.title("Le Bad \"Rhythm\" Game")
 canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT, bg="white")
 canvas.pack()
 
@@ -308,39 +308,45 @@ root.bind("<space>", move_up)
 root.bind("<KeyRelease-space>", move_down)
 
 #collisions
+def update_score(score_change):
+    global score
+    score += score_change
+    colors = ['black', 'orange', 'red', 'black']
+    canvas.itemconfigure(score_count, text=f"Score: {score}", fill = colors[strikes])
+
 def collision(a, b):
     ax1, ay1, ax2, ay2 = canvas.bbox(a)
     bx1, by1, bx2, by2 = canvas.bbox(b)
     return ax1<bx2 and ax2>bx1 and ay1<by2 and ay2>by1
 
 def check_collisions():
-    global points, strikes, projectiles, spikes
+    global strikes, projectiles, spikes
     for projectile in projectiles[:]:
         if collision(projectile,player):
             canvas.delete(projectile)
-            points += 1
+            update_score(1)
             if projectile in projectiles:
                 projectiles.remove(projectile)
     for projectile in projectiles:
         ex1, ey1, ex2, ey2 = canvas.bbox(projectile)
         if ex2 <= 0:
             canvas.delete(projectile)
-            points -= 4
             if ex2-ex1 >= 50:
                 strikes += 1
+            update_score(-4)
             if projectile in projectiles:
                 projectiles.remove(projectile)
     for spike in spikes[:]:
         if collision(spike,player):
-            points -= 4
             strikes += 1
+            update_score(-4)
             canvas.delete(spike)
             if spike in spikes:
                 spikes.remove(spike)
     for spike in spikes:
         sx1, sy1, sx2, sy2 = canvas.bbox(spike)
         if sx2 <= 0:
-            points += 1
+            update_score(1)
             canvas.delete(spike)
             if spike in spikes:
                 spikes.remove(spike)
@@ -386,25 +392,35 @@ def make_obstacle():
 
 #Variables
 strikes = 0
-points = 0
+score = 0
 timer = 0
 heal_delay = 0
-
-#BPM - Only change BPM and adjust displacement using commented out print statement until delay is an integer
-#      If you can't find a displacement that yields an integer delay and displacement, try a different bpm
+'''
+BPM - Only change BPM and adjust displacement using commented out print statement until delay is an integer
+      If you can't find a displacement that yields an integer delay and displacement, try a different bpm
+'''
 bpm = 150
-displacement = -4.5
+#displacement = -4.5
+delay = 24
+bps = bpm/60
+dps = bps*75
+tps = 1000/delay
+units_per_beat = dps/tps
 
+
+print(units_per_beat)
+'''
 units_per_second = bpm/60*75
 movements_per_second = units_per_second/abs(displacement)
 delay = int(1000/movements_per_second)
 spawn_delay = 60000/bpm
-#print(f"Delay: {1000/movements_per_second}\nDisplacement: {displacement}")
+print(f"Delay: {1000/movements_per_second}\nDisplacement: {displacement}")
+'''
 
 
 #Game Loop
 def game_loop():
-    global timer, points, heal_delay, strikes, score_count
+    global timer, heal_delay, strikes, score_count
     timer += delay
     if timer > spawn_delay:
         timer -= spawn_delay
@@ -416,7 +432,6 @@ def game_loop():
                 strikes -= 1
     move_obstacles()
     check_collisions()
-    canvas.itemconfigure(score_count, text=f"Score: {points}")
     if strikes >= 3:
         reset()
         return
@@ -437,6 +452,8 @@ def reset():
     projectiles.clear()
     spikes.clear()
     strikes = 0
+    if score > 1:
+        print(f"Your score was: {score}")
     score = 0
     start()
 def kill(event):
