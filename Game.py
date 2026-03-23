@@ -386,6 +386,7 @@ heal_delay = 0 #Timer for delaying healing
 ''' BPM Input - Can be anything '''
 bpm_input = 120 #I recommend 300 (:
 #Unfortunately, due to lag, you can't put a song or metronome to this
+#With more time I'd add a menu to adjust this but I don't have a game pause function
 
 #Calculations
 #DO NOT CHANGE ANYTHING BELOW
